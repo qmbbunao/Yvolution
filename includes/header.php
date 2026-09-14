@@ -12,7 +12,7 @@ $pageTitle = $pageTitle ?? 'Yvolution Custom Apparel';
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= e($pageTitle) ?></title>
-<link rel="icon" href="<?= BASE_URL ?>/assets/images/logo/logo2.png">
+<link rel="icon" href="<?= BASE_URL ?>/assets/images/logo/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= asset_url('/assets/css/main.css') ?>">
