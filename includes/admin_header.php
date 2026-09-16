@@ -3,7 +3,7 @@
  * Shared Admin/Super Admin layout header. Include after require_role().
  * Set $pageTitle and $activeNav before including.
  * $activeNav one of: dashboard, orders, products, services, packages,
- * promotions, inventory, customers, homepage, users, settings, analytics, audit
+ * promotions, inventory, size_guides, customers, homepage, users, settings, analytics, audit
  */
 $user = current_user();
 $pageTitle = $pageTitle ?? 'Admin — Yvolution Custom Apparel';
@@ -18,6 +18,7 @@ $navItems = [
     ['key' => 'services',   'label' => 'Services',    'href' => '/admin/services/index.php',   'roles' => ['admin','superadmin']],
     ['key' => 'packages',   'label' => 'Packages',    'href' => '/admin/packages/index.php',   'roles' => ['admin','superadmin']],
     ['key' => 'design_templates', 'label' => 'Design Templates', 'href' => '/admin/design_templates/index.php', 'roles' => ['admin','superadmin']],
+    ['key' => 'size_guides', 'label' => 'Size Guides', 'href' => '/admin/size_guides/index.php', 'roles' => ['admin','superadmin']],
     ['key' => 'promotions', 'label' => 'Promotions',  'href' => '/admin/promotions/index.php', 'roles' => ['admin','superadmin']],
     ['key' => 'inventory',  'label' => 'Inventory',   'href' => '/admin/inventory/index.php',  'roles' => ['admin','superadmin']],
     ['key' => 'customers',  'label' => 'Customers',   'href' => '/admin/customers/index.php',  'roles' => ['admin','superadmin']],

@@ -54,9 +54,14 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </section>
 
+<div class="brand-marquee" aria-label="Yvolution custom apparel categories">
+    <div class="brand-marquee-track"><span>TEAMWEAR</span><b>/</b><span>PERFORMANCE</span><b>/</b><span>IDENTITY</span><b>/</b><span>BUILT TO BELONG</span><b>/</b><span>TEAMWEAR</span><b>/</b><span>PERFORMANCE</span><b>/</b><span>IDENTITY</span><b>/</b></div>
+</div>
+
 <!-- ===================== ABOUT / WHY US ===================== -->
 <?php if ($about): ?>
-<section class="container reveal" style="padding:80px 24px;text-align:center;">
+<section class="about-intro container reveal" style="padding:80px 24px;text-align:center;">
+    <p class="section-kicker">01 / WHY YVOLUTION</p>
     <h2><?= e($about['title']) ?></h2>
     <p class="text-secondary" style="max-width:640px;margin:0 auto;font-size:16px;"><?= e($about['content_text']) ?></p>
 </section>
@@ -65,6 +70,7 @@ include __DIR__ . '/../includes/header.php';
 <!-- ===================== SERVICES ===================== -->
 <section id="services" class="reveal" style="background:var(--c-navy-900);color:#fff;padding:80px 0;">
     <div class="container">
+        <p class="section-kicker section-kicker-light">02 / WHAT WE MAKE</p>
         <h2 style="color:var(--c-chalk);">Our Services</h2>
         <p style="color:var(--c-muted);margin-bottom:36px;">From single jerseys to full-team orders.</p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;">
@@ -89,6 +95,7 @@ include __DIR__ . '/../includes/header.php';
 
 <!-- ===================== PRODUCTS ===================== -->
 <section id="products" class="container" style="padding:80px 24px;">
+    <p class="section-kicker">03 / THE CATALOG</p>
     <h2 class="reveal">Featured Products</h2>
     <p class="text-secondary reveal" style="margin-bottom:36px;">Jerseys, tees, hoodies, and uniforms — fully customizable.</p>
     <div class="product-grid">
@@ -117,6 +124,7 @@ include __DIR__ . '/../includes/header.php';
 <!-- ===================== PACKAGES ===================== -->
 <section id="packages" class="surface-alt reveal" style="border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle);padding:80px 0;">
     <div class="container">
+        <p class="section-kicker">04 / BUILT FOR TEAMS</p>
         <h2>Team Packages</h2>
         <p class="text-secondary" style="margin-bottom:36px;">Bundled pricing for full-team and bulk orders.</p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;">
@@ -125,6 +133,9 @@ include __DIR__ . '/../includes/header.php';
             <?php endif; ?>
             <?php foreach ($packages as $pkg): ?>
                 <div class="card">
+                    <?php if (!empty($pkg['image_url'])): ?>
+                        <img src="<?= e($pkg['image_url']) ?>" alt="<?= e($pkg['name']) ?>" style="display:block;width:100%;height:190px;object-fit:cover;">
+                    <?php endif; ?>
                     <div class="card-body">
                         <h3><?= e($pkg['name']) ?></h3>
                         <p class="text-secondary" style="font-size:14px;"><?= e($pkg['description']) ?></p>
@@ -143,10 +154,14 @@ include __DIR__ . '/../includes/header.php';
 <!-- ===================== PROMOTIONS ===================== -->
 <?php if (!empty($promotions)): ?>
 <section id="promotions" class="container reveal" style="padding:80px 24px;">
+    <p class="section-kicker">05 / THE GOOD STUFF</p>
     <h2>Current Promotions</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;margin-top:24px;">
         <?php foreach ($promotions as $promo): ?>
             <div class="card" style="border-left:6px solid var(--c-accent);">
+                <?php if (!empty($promo['image_url'])): ?>
+                    <img src="<?= e($promo['image_url']) ?>" alt="<?= e($promo['title']) ?>" style="display:block;width:100%;height:190px;object-fit:cover;">
+                <?php endif; ?>
                 <div class="card-body">
                     <h3 style="font-size:17px;"><?= e($promo['title']) ?></h3>
                     <p class="text-secondary" style="font-size:14px;"><?= e($promo['description']) ?></p>
@@ -167,6 +182,7 @@ include __DIR__ . '/../includes/header.php';
 <!-- ===================== TESTIMONIALS ===================== -->
 <section class="reveal" style="background:var(--c-navy-950);color:#fff;padding:80px 0;">
     <div class="container">
+        <p class="section-kicker section-kicker-light">06 / FROM THE COMMUNITY</p>
         <h2 style="color:var(--c-chalk);text-align:center;">What Teams Are Saying</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;margin-top:36px;">
             <?php if (empty($testimonials)): ?>
@@ -188,6 +204,7 @@ include __DIR__ . '/../includes/header.php';
 <!-- ===================== CONTACT ===================== -->
 <?php $business = require BASE_PATH . '/config/business.php'; ?>
 <section id="contact" class="container reveal" style="padding:80px 24px;max-width:640px;">
+    <p class="section-kicker" style="text-align:center;">07 / LET'S TALK</p>
     <h2 style="text-align:center;">Get In Touch</h2>
     <p class="text-secondary" style="text-align:center;margin-bottom:12px;">Questions about pricing, bulk orders, or turnaround time? Send us a message.</p>
     <p class="text-muted-tone" style="text-align:center;font-size:14px;margin-bottom:32px;">📍 <?= e($business['location']['address']) ?></p>

@@ -89,7 +89,7 @@ function e(?string $value): string
 function asset_url(string $relativePath): string
 {
     $fullPath = BASE_PATH . $relativePath;
-    $version = file_exists($fullPath) ? filemtime($fullPath) : time();
+    $version = file_exists($fullPath) ? filemtime($fullPath) . '-' . filesize($fullPath) : time();
     return BASE_URL . $relativePath . '?v=' . $version;
 }
 

@@ -17,12 +17,19 @@ include __DIR__ . '/../../includes/admin_header.php';
 
 <div class="data-table-wrap">
     <table class="data-table">
-        <thead><tr><th>Title</th><th>Discount</th><th>Code</th><th>Dates</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Image</th><th>Title</th><th>Discount</th><th>Code</th><th>Dates</th><th>Status</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($promotions as $p):
             $isExpired = strtotime($p['end_date']) < strtotime('today');
         ?>
             <tr>
+                <td>
+                    <?php if (!empty($p['image_url'])): ?>
+                        <img src="<?= e($p['image_url']) ?>" alt="<?= e($p['title']) ?>" class="thumb" style="width:64px;height:64px;object-fit:cover;">
+                    <?php else: ?>
+                        <span class="text-muted-tone">None</span>
+                    <?php endif; ?>
+                </td>
                 <td><strong><?= e($p['title']) ?></strong></td>
                 <td><?= $p['discount_type'] === 'percent' ? (int) $p['discount_value'] . '% OFF' : money($p['discount_value']) . ' OFF' ?></td>
                 <td><?= e($p['promo_code'] ?: '—') ?></td>
@@ -41,7 +48,7 @@ include __DIR__ . '/../../includes/admin_header.php';
             </tr>
         <?php endforeach; ?>
         <?php if (empty($promotions)): ?>
-            <tr><td colspan="6" class="empty-state">No promotions yet. <a href="<?= BASE_URL ?>/admin/promotions/form.php" class="text-link">Add one</a>.</td></tr>
+            <tr><td colspan="7" class="empty-state">No promotions yet. <a href="<?= BASE_URL ?>/admin/promotions/form.php" class="text-link">Add one</a>.</td></tr>
         <?php endif; ?>
         </tbody>
     </table>

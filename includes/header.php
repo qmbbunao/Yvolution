@@ -26,13 +26,14 @@ $pageTitle = $pageTitle ?? 'Yvolution Custom Apparel';
 </script>
 </head>
 <body>
+<div class="site-topline"><span>YVOLUTION CUSTOM APPAREL</span><span>Built for the game / Designed to lead</span><span>Est. 2015</span></div>
 <header class="navbar">
     <div class="navbar-inner">
         <a href="<?= BASE_URL ?>/public/index.php" class="navbar-logo">
             <img src="<?= BASE_URL ?>/assets/images/logo/logo.png" alt="Yvolution Custom Apparel logo">
-            YVOLUTION
+            <span>YVOLUTION<small>Custom Apparel</small></span>
         </a>
-        <button class="navbar-toggle" id="navToggle" aria-label="Toggle menu">&#9776;</button>
+        <button class="navbar-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span></button>
         <nav class="navbar-links" id="navLinks">
             <form class="catalog-search" action="<?= BASE_URL ?>/public/search.php" method="GET" role="search" autocomplete="off">
                 <button type="button" class="search-toggle" id="searchToggle" aria-label="Open product search" aria-expanded="false">
@@ -48,6 +49,7 @@ $pageTitle = $pageTitle ?? 'Yvolution Custom Apparel';
             <a href="<?= BASE_URL ?>/public/index.php#services">Services</a>
             <a href="<?= BASE_URL ?>/public/index.php#packages">Packages</a>
             <a href="<?= BASE_URL ?>/public/index.php#promotions">Promotions</a>
+            <a href="<?= BASE_URL ?>/public/size_guide.php">Size Guide</a>
             <a href="<?= BASE_URL ?>/public/index.php#contact">Contact</a>
 
             <?php if (!$user): ?>
@@ -120,7 +122,8 @@ $pageTitle = $pageTitle ?? 'Yvolution Custom Apparel';
 })();
 
 document.getElementById('navToggle')?.addEventListener('click', function () {
-    document.getElementById('navLinks').classList.toggle('open');
+    const isOpen = document.getElementById('navLinks').classList.toggle('open');
+    this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 });
 
 const catalogSearch = document.querySelector('.catalog-search');

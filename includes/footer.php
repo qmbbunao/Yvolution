@@ -12,6 +12,7 @@
             <a href="<?= BASE_URL ?>/public/index.php#services">Services</a>
             <a href="<?= BASE_URL ?>/public/index.php#packages">Packages</a>
             <a href="<?= BASE_URL ?>/public/index.php#promotions">Promotions</a>
+            <a href="<?= BASE_URL ?>/public/size_guide.php">Size Guide</a>
         </div>
         <div>
             <h4>Get in Touch</h4>

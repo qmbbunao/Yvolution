@@ -17,10 +17,17 @@ include __DIR__ . '/../../includes/admin_header.php';
 
 <div class="data-table-wrap">
     <table class="data-table">
-        <thead><tr><th>Name</th><th>Price</th><th>Min. Qty</th><th>Status</th><th></th></tr></thead>
+        <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Min. Qty</th><th>Status</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($packages as $p): ?>
             <tr>
+                <td>
+                    <?php if (!empty($p['image_url'])): ?>
+                        <img src="<?= e($p['image_url']) ?>" alt="<?= e($p['name']) ?>" class="thumb" style="width:64px;height:64px;object-fit:cover;">
+                    <?php else: ?>
+                        <span class="text-muted-tone">None</span>
+                    <?php endif; ?>
+                </td>
                 <td><strong><?= e($p['name']) ?></strong><p style="font-size:12px;color:#888;margin:2px 0 0;"><?= e(mb_strimwidth($p['description'] ?? '', 0, 70, '...')) ?></p></td>
                 <td><?= money($p['price']) ?></td>
                 <td><?= (int) $p['min_quantity'] ?></td>
@@ -32,7 +39,7 @@ include __DIR__ . '/../../includes/admin_header.php';
             </tr>
         <?php endforeach; ?>
         <?php if (empty($packages)): ?>
-            <tr><td colspan="5" class="empty-state">No packages yet. <a href="<?= BASE_URL ?>/admin/packages/form.php" class="text-link">Add one</a>.</td></tr>
+            <tr><td colspan="6" class="empty-state">No packages yet. <a href="<?= BASE_URL ?>/admin/packages/form.php" class="text-link">Add one</a>.</td></tr>
         <?php endif; ?>
         </tbody>
     </table>
