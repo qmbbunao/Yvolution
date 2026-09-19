@@ -17,7 +17,7 @@ include __DIR__ . '/../../includes/admin_header.php';
 
 <div class="data-table-wrap">
     <table class="data-table">
-        <thead><tr><th>Item</th><th>SKU</th><th>Category</th><th>On Hand</th><th>Reorder Level</th><th>Adjust Stock</th></tr></thead>
+        <thead><tr><th>Item</th><th>SKU</th><th>Category</th><th>On Hand</th><th>Reorder Level</th><th>Adjust Stock</th><th></th></tr></thead>
         <tbody>
         <?php foreach ($items as $i):
             $low = $i['quantity_on_hand'] <= $i['reorder_level'];
@@ -39,10 +39,17 @@ include __DIR__ . '/../../includes/admin_header.php';
                         <button type="submit" class="btn btn-dark btn-sm">Apply</button>
                     </form>
                 </td>
+                <td>
+                    <form method="POST" action="<?= BASE_URL ?>/admin/inventory/delete.php" onsubmit="return confirm('Delete this inventory item?');">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="inventory_id" value="<?= (int) $i['inventory_id'] ?>">
+                        <button type="submit" class="action-link danger" style="background:none;border:none;cursor:pointer;">Delete</button>
+                    </form>
+                </td>
             </tr>
         <?php endforeach; ?>
         <?php if (empty($items)): ?>
-            <tr><td colspan="6" class="empty-state">No inventory items yet.</td></tr>
+            <tr><td colspan="7" class="empty-state">No inventory items yet.</td></tr>
         <?php endif; ?>
         </tbody>
     </table>

@@ -79,9 +79,7 @@ include __DIR__ . '/../includes/header.php';
             <?php endif; ?>
             <?php foreach ($services as $s): ?>
                 <div class="card" style="background:var(--c-navy-800);color:#fff;">
-                    <?php if ($s['image_url']): ?>
-                        <img src="<?= e($s['image_url']) ?>" alt="<?= e($s['name']) ?>" style="height:160px;width:100%;object-fit:cover;">
-                    <?php endif; ?>
+                    <img src="<?= e($s['image_url'] ?: BASE_URL . '/assets/images/products/placeholder.jpg') ?>" alt="<?= e($s['name']) ?>" style="display:block;height:160px;width:100%;object-fit:cover;">
                     <div class="card-body">
                         <h3 style="font-size:18px;color:var(--c-chalk);"><?= e($s['name']) ?></h3>
                         <p style="color:var(--c-muted);font-size:14px;min-height:40px;"><?= e($s['description']) ?></p>

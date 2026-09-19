@@ -209,13 +209,23 @@ include __DIR__ . '/../includes/header.php';
     let heightUnit = 'cm';
     let weightUnit = 'kg';
 
+    function updateInputLimits() {
+        height.min = heightUnit === 'ft' ? '3.3' : '100';
+        height.max = heightUnit === 'ft' ? '7.9' : '240';
+        height.step = heightUnit === 'ft' ? '0.1' : '1';
+        weight.min = weightUnit === 'lb' ? '55' : '25';
+        weight.max = weightUnit === 'lb' ? '551' : '250';
+        weight.step = weightUnit === 'lb' ? '1' : '1';
+    }
+
     form.querySelectorAll('[data-height-unit]').forEach(function (button) {
         button.addEventListener('click', function () {
             const nextUnit = button.dataset.heightUnit;
             if (nextUnit === heightUnit) return;
             const value = Number(height.value);
-            if (value) height.value = nextUnit === 'ft' ? Math.round((value / 30.48) * 12) / 12 : Math.round(value * 30.48);
+            if (value) height.value = nextUnit === 'ft' ? (value / 30.48).toFixed(1) : Math.round(value * 30.48);
             heightUnit = nextUnit;
+            updateInputLimits();
             form.querySelectorAll('[data-height-unit]').forEach(item => item.classList.toggle('is-active', item.dataset.heightUnit === nextUnit));
         });
     });
@@ -226,21 +236,41 @@ include __DIR__ . '/../includes/header.php';
             const value = Number(weight.value);
             if (value) weight.value = nextUnit === 'lb' ? Math.round(value * 2.20462) : Math.round(value / 2.20462);
             weightUnit = nextUnit;
+            updateInputLimits();
             form.querySelectorAll('[data-weight-unit]').forEach(item => item.classList.toggle('is-active', item.dataset.weightUnit === nextUnit));
         });
     });
 
+    updateInputLimits();
+
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         const selected = category.options[category.selectedIndex];
-        const sizes = selected.dataset.sizes.split('|').filter(Boolean);
+        const configuredSizes = selected.dataset.sizes.split('|').filter(Boolean);
+        const sizes = configuredSizes.length ? configuredSizes : ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
         const heightValue = heightUnit === 'ft' ? Number(height.value) * 30.48 : Number(height.value);
         const weightValue = weightUnit === 'lb' ? Number(weight.value) / 2.20462 : Number(weight.value);
-        if (!sizes.length || !heightValue || !weightValue) return;
+        const categoryName = selected.textContent.trim().toLowerCase();
 
-        const bodyIndex = ((heightValue - 145) / 55) * 0.4 + ((weightValue - 40) / 90) * 0.6;
-        const position = Math.max(0, Math.min(sizes.length - 1, Math.round(bodyIndex * (sizes.length - 1))));
-        result.textContent = 'Estimated starting size: ' + sizes[position] + ' for ' + selected.textContent.trim() + '. Please verify against the complete chart.';
+        if (!Number.isFinite(heightValue) || !Number.isFinite(weightValue) || heightValue < 100 || heightValue > 240 || weightValue < 25 || weightValue > 250) {
+            result.textContent = 'Please enter a height from 100 to 240 cm and a weight from 25 to 250 kg.';
+            result.classList.add('is-visible');
+            return;
+        }
+
+        // The catalog currently contains size labels rather than garment measurements.
+        // Use BMI and height as a general starting point, then map it to this category's sizes.
+        const bmi = weightValue / Math.pow(heightValue / 100, 2);
+        const bmiScore = Math.max(0, Math.min(1, (bmi - 16) / 20));
+        const heightScore = Math.max(0, Math.min(1, (heightValue - 145) / 55));
+        const isBottom = /short|pant|bottom|jogger|skirt/.test(categoryName);
+        const bodyScore = isBottom
+            ? (bmiScore * 0.8) + (heightScore * 0.2)
+            : (bmiScore * 0.65) + (heightScore * 0.35);
+        const position = Math.max(0, Math.min(sizes.length - 1, Math.round(bodyScore * (sizes.length - 1))));
+
+        result.textContent = 'Recommended Size: ' + sizes[position];
+        result.style.fontWeight = 'bold';
         result.classList.add('is-visible');
     });
 })();

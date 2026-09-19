@@ -4,24 +4,49 @@ require_role('admin', 'superadmin');
 
 $admin = current_user();
 $pdo = Database::connect();
-$productId = (int) ($_GET['id'] ?? 0);
+$productId = (int) ($_POST['product_id'] ?? 0);
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrf_verify()) {
+    set_flash('error', 'Invalid delete request.');
+    redirect('/admin/products/index.php');
+}
 
 if (!$productId) {
     redirect('/admin/products/index.php');
 }
 
-// If this product is referenced by any order, we can't hard-delete it (keeps order history intact).
-// Instead, just deactivate it so it disappears from the storefront.
-$check = $pdo->prepare("SELECT COUNT(*) AS c FROM order_items WHERE item_type = 'product' AND item_ref_id = ?");
-$check->execute([$productId]);
+$deletedSuccessfully = false;
 
-if ((int) $check->fetch()['c'] > 0) {
-    $pdo->prepare("UPDATE products SET status = 'inactive' WHERE product_id = ?")->execute([$productId]);
-    set_flash('success', 'Product has order history, so it was deactivated instead of deleted.');
-} else {
-    $pdo->prepare("DELETE FROM products WHERE product_id = ?")->execute([$productId]);
+try {
+    $pdo->beginTransaction();
+
+    // Keep order_items as historical snapshots while removing catalog references.
+    $pdo->prepare("UPDATE feedback SET product_id = NULL WHERE product_id = ?")->execute([$productId]);
+    $pdo->prepare("DELETE FROM product_images WHERE product_id = ?")->execute([$productId]);
+    $deleted = $pdo->prepare("DELETE FROM products WHERE product_id = ?");
+    $deleted->execute([$productId]);
+
+    if ($deleted->rowCount() !== 1) {
+        throw new RuntimeException('Product not found.');
+    }
+
+    $pdo->commit();
+    $deletedSuccessfully = true;
     set_flash('success', 'Product deleted.');
+} catch (Throwable $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    error_log('Product deletion failed: ' . $e->getMessage());
+    set_flash('error', 'Could not delete the product.');
 }
 
-log_audit($pdo, $admin['user_id'], 'product_deleted', 'products', $productId);
+try {
+    if ($deletedSuccessfully) {
+        log_audit($pdo, $admin['user_id'], 'product_deleted', 'products', $productId);
+    }
+} catch (Throwable $e) {
+    error_log('Product deletion audit failed: ' . $e->getMessage());
+}
+
 redirect('/admin/products/index.php');

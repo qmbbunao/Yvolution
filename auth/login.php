@@ -65,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $successMsg = get_flash('success');
+$flashError = get_flash('error');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -89,6 +90,10 @@ $successMsg = get_flash('success');
 
             <?php if ($successMsg): ?>
                 <div class="alert alert-success"><?= e($successMsg) ?></div>
+            <?php endif; ?>
+
+            <?php if ($flashError): ?>
+                <div class="alert alert-error"><?= e($flashError) ?></div>
             <?php endif; ?>
 
             <?php foreach ($errors as $err): ?>

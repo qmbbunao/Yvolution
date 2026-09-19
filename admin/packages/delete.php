@@ -4,20 +4,41 @@ require_role('admin', 'superadmin');
 
 $admin = current_user();
 $pdo = Database::connect();
-$packageId = (int) ($_GET['id'] ?? 0);
+$packageId = (int) ($_POST['package_id'] ?? 0);
 
-if ($packageId) {
-    $check = $pdo->prepare("SELECT COUNT(*) AS c FROM order_items WHERE item_type = 'package' AND item_ref_id = ?");
-    $check->execute([$packageId]);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrf_verify()) {
+    set_flash('error', 'Invalid delete request.');
+    redirect('/admin/packages/index.php');
+}
 
-    if ((int) $check->fetch()['c'] > 0) {
-        $pdo->prepare("UPDATE packages SET status = 'inactive' WHERE package_id = ?")->execute([$packageId]);
-        set_flash('success', 'Package has order history, so it was deactivated instead of deleted.');
-    } else {
-        $pdo->prepare("DELETE FROM packages WHERE package_id = ?")->execute([$packageId]);
-        set_flash('success', 'Package deleted.');
+if (!$packageId) {
+    set_flash('error', 'Invalid package.');
+    redirect('/admin/packages/index.php');
+}
+
+$deletedSuccessfully = false;
+
+try {
+    $deleted = $pdo->prepare("DELETE FROM packages WHERE package_id = ?");
+    $deleted->execute([$packageId]);
+
+    if ($deleted->rowCount() !== 1) {
+        throw new RuntimeException('Package not found.');
     }
-    log_audit($pdo, $admin['user_id'], 'package_deleted', 'packages', $packageId);
+
+    $deletedSuccessfully = true;
+    set_flash('success', 'Package deleted.');
+} catch (Throwable $e) {
+    error_log('Package deletion failed: ' . $e->getMessage());
+    set_flash('error', 'Could not delete the package.');
+}
+
+try {
+    if ($deletedSuccessfully) {
+        log_audit($pdo, $admin['user_id'], 'package_deleted', 'packages', $packageId);
+    }
+} catch (Throwable $e) {
+    error_log('Package deletion audit failed: ' . $e->getMessage());
 }
 
 redirect('/admin/packages/index.php');

@@ -34,7 +34,11 @@ include __DIR__ . '/../../includes/admin_header.php';
                 <td><?= $p['is_featured'] ? '⭐' : '—' ?></td>
                 <td>
                     <a href="<?= BASE_URL ?>/admin/products/form.php?id=<?= (int) $p['product_id'] ?>" class="action-link edit">Edit</a>
-                    <a href="<?= BASE_URL ?>/admin/products/delete.php?id=<?= (int) $p['product_id'] ?>" class="action-link danger" onclick="return confirm('Delete this product?');">Delete</a>
+                    <form method="POST" action="<?= BASE_URL ?>/admin/products/delete.php" style="display:inline;" onsubmit="return confirm('Delete this product?');">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="product_id" value="<?= (int) $p['product_id'] ?>">
+                        <button type="submit" class="action-link danger" style="background:none;border:none;cursor:pointer;">Delete</button>
+                    </form>
                 </td>
             </tr>
         <?php endforeach; ?>

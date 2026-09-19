@@ -34,7 +34,11 @@ include __DIR__ . '/../../includes/admin_header.php';
                 <td><span class="badge <?= $p['status'] === 'active' ? 'badge-success' : 'badge-danger' ?>"><?= ucfirst($p['status']) ?></span></td>
                 <td>
                     <a href="<?= BASE_URL ?>/admin/packages/form.php?id=<?= (int) $p['package_id'] ?>" class="action-link edit">Edit</a>
-                    <a href="<?= BASE_URL ?>/admin/packages/delete.php?id=<?= (int) $p['package_id'] ?>" class="action-link danger" onclick="return confirm('Delete this package?');">Delete</a>
+                    <form method="POST" action="<?= BASE_URL ?>/admin/packages/delete.php" style="display:inline;" onsubmit="return confirm('Delete this package?');">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="package_id" value="<?= (int) $p['package_id'] ?>">
+                        <button type="submit" class="action-link danger" style="background:none;border:none;cursor:pointer;">Delete</button>
+                    </form>
                 </td>
             </tr>
         <?php endforeach; ?>

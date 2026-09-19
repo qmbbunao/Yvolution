@@ -4,20 +4,41 @@ require_role('admin', 'superadmin');
 
 $admin = current_user();
 $pdo = Database::connect();
-$serviceId = (int) ($_GET['id'] ?? 0);
+$serviceId = (int) ($_POST['service_id'] ?? 0);
 
-if ($serviceId) {
-    $check = $pdo->prepare("SELECT COUNT(*) AS c FROM order_items WHERE item_type = 'service' AND item_ref_id = ?");
-    $check->execute([$serviceId]);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrf_verify()) {
+    set_flash('error', 'Invalid delete request.');
+    redirect('/admin/services/index.php');
+}
 
-    if ((int) $check->fetch()['c'] > 0) {
-        $pdo->prepare("UPDATE services SET status = 'inactive' WHERE service_id = ?")->execute([$serviceId]);
-        set_flash('success', 'Service has order history, so it was deactivated instead of deleted.');
-    } else {
-        $pdo->prepare("DELETE FROM services WHERE service_id = ?")->execute([$serviceId]);
-        set_flash('success', 'Service deleted.');
+if (!$serviceId) {
+    set_flash('error', 'Invalid service.');
+    redirect('/admin/services/index.php');
+}
+
+$deletedSuccessfully = false;
+
+try {
+    $deleted = $pdo->prepare("DELETE FROM services WHERE service_id = ?");
+    $deleted->execute([$serviceId]);
+
+    if ($deleted->rowCount() !== 1) {
+        throw new RuntimeException('Service not found.');
     }
-    log_audit($pdo, $admin['user_id'], 'service_deleted', 'services', $serviceId);
+
+    $deletedSuccessfully = true;
+    set_flash('success', 'Service deleted.');
+} catch (Throwable $e) {
+    error_log('Service deletion failed: ' . $e->getMessage());
+    set_flash('error', 'Could not delete the service.');
+}
+
+try {
+    if ($deletedSuccessfully) {
+        log_audit($pdo, $admin['user_id'], 'service_deleted', 'services', $serviceId);
+    }
+} catch (Throwable $e) {
+    error_log('Service deletion audit failed: ' . $e->getMessage());
 }
 
 redirect('/admin/services/index.php');
