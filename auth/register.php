@@ -1,10 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/app.php';
 
-if (is_logged_in()) {
-    redirect('/customer/dashboard.php');
-}
-
 $errors = [];
 $old = ['first_name' => '', 'last_name' => '', 'email' => '', 'phone' => ''];
 
@@ -49,6 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $userId = (int) $pdo->lastInsertId();
                 log_audit($pdo, $userId, 'account_registered', 'users', $userId);
 
+                unset($_SESSION['user']);
+                session_regenerate_id(true);
                 set_flash('success', 'Account created! You can now log in.');
                 redirect('/auth/login.php');
             }

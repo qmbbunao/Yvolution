@@ -8,7 +8,8 @@
         </div>
         <div>
             <h4>Explore</h4>
-            <a href="<?= BASE_URL ?>/public/index.php#products">Products</a>
+            <a href="<?= BASE_URL ?>/public/search.php">All Products</a>
+            <a href="<?= BASE_URL ?>/public/cart.php">Cart</a>
             <a href="<?= BASE_URL ?>/public/index.php#services">Services</a>
             <a href="<?= BASE_URL ?>/public/index.php#packages">Packages</a>
             <a href="<?= BASE_URL ?>/public/index.php#promotions">Promotions</a>

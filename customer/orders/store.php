@@ -23,6 +23,8 @@ $notes       = trim($_POST['notes'] ?? '');
 $address     = trim($_POST['delivery_address'] ?? '');
 $lat         = $_POST['delivery_lat'] !== '' ? (float) $_POST['delivery_lat'] : null;
 $lng         = $_POST['delivery_lng'] !== '' ? (float) $_POST['delivery_lng'] : null;
+$cartCheckout = ($_POST['cart_checkout'] ?? '') === '1';
+$checkoutItems = [];
 
 // Tarpaulin / event printing options (only present when the selected service requires them)
 $eventType     = trim($_POST['event_type'] ?? '') ?: null;
@@ -42,11 +44,52 @@ if (!in_array($orderType, ['product', 'service', 'package', 'custom'], true)) {
     redirect('/customer/orders/create.php');
 }
 
-// Resolve item name + unit price
+// Resolve current catalog values on the server; cart snapshots never set order prices.
 $itemName = $customName ?: 'Custom Request';
 $unitPrice = 0;
 
-if ($orderType === 'product' && $itemRefId) {
+if ($cartCheckout) {
+    foreach ($_SESSION['cart'] ?? [] as $cartItem) {
+        $stmt = $pdo->prepare(
+            "SELECT product_id, name, base_price, available_sizes, available_colors, stock_qty
+             FROM products WHERE product_id = ? AND status = 'active' LIMIT 1"
+        );
+        $stmt->execute([(int) ($cartItem['product_id'] ?? 0)]);
+        $product = $stmt->fetch();
+        if (!$product) {
+            set_flash('error', 'A product in your cart is no longer available. Please review your cart.');
+            redirect('/public/cart.php');
+        }
+        $itemQuantity = (int) ($cartItem['quantity'] ?? 0);
+        $itemSize = trim($cartItem['size'] ?? '');
+        $itemColor = trim($cartItem['color'] ?? '');
+        $validSizes = array_filter(array_map('trim', explode(',', $product['available_sizes'] ?? '')));
+        $validColors = array_filter(array_map('trim', explode(',', $product['available_colors'] ?? '')));
+        if (!$product || $itemQuantity < 1 || $itemQuantity > (int) $product['stock_qty']
+            || ($validSizes && !in_array($itemSize, $validSizes, true))
+            || ($validColors && !in_array($itemColor, $validColors, true))) {
+            set_flash('error', 'A cart item is no longer available in the selected quantity or options. Please review your cart.');
+            redirect('/public/cart.php');
+        }
+        $checkoutItems[] = [
+            'product_id' => (int) $product['product_id'],
+            'name' => $product['name'],
+            'size' => $itemSize,
+            'color' => $itemColor,
+            'quantity' => $itemQuantity,
+            'unit_price' => (float) $product['base_price'],
+            'subtotal' => (float) $product['base_price'] * $itemQuantity,
+        ];
+    }
+    if (!$checkoutItems) {
+        set_flash('error', 'Your cart is empty.');
+        redirect('/public/cart.php');
+    }
+    $orderType = 'product';
+    $itemName = 'Cart order (' . array_sum(array_column($checkoutItems, 'quantity')) . ' items)';
+    $quantity = (int) array_sum(array_column($checkoutItems, 'quantity'));
+    $subtotal = array_sum(array_column($checkoutItems, 'subtotal'));
+} elseif ($orderType === 'product' && $itemRefId) {
     $stmt = $pdo->prepare("SELECT name, base_price FROM products WHERE product_id = ?");
     $stmt->execute([$itemRefId]);
     if ($row = $stmt->fetch()) { $itemName = $row['name']; $unitPrice = (float) $row['base_price']; }
@@ -60,8 +103,9 @@ if ($orderType === 'product' && $itemRefId) {
     if ($row = $stmt->fetch()) { $itemName = $row['name']; $unitPrice = (float) $row['price']; }
 }
 
-$subtotal = $unitPrice * $quantity;
+if (!$cartCheckout) $subtotal = $unitPrice * $quantity;
 
+$orderCode = '';
 try {
     $pdo->beginTransaction();
 
@@ -74,10 +118,27 @@ try {
     $stmt->execute([$orderCode, $user['user_id'], $orderType, $eventType, $subtotal, $notes, $address ?: null, $lat, $lng]);
     $orderId = (int) $pdo->lastInsertId();
 
-    $pdo->prepare(
+    $insertItem = $pdo->prepare(
         "INSERT INTO order_items (order_id, item_type, item_ref_id, item_name, size, color, quantity, unit_price, subtotal)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-    )->execute([$orderId, $orderType, $itemRefId, $itemName, $size ?: null, $color ?: null, $quantity, $unitPrice, $subtotal]);
+    );
+    if ($cartCheckout) {
+        foreach ($checkoutItems as $checkoutItem) {
+            $insertItem->execute([
+                $orderId,
+                'product',
+                $checkoutItem['product_id'],
+                $checkoutItem['name'],
+                $checkoutItem['size'] ?: null,
+                $checkoutItem['color'] ?: null,
+                $checkoutItem['quantity'],
+                $checkoutItem['unit_price'],
+                $checkoutItem['subtotal'],
+            ]);
+        }
+    } else {
+        $insertItem->execute([$orderId, $orderType, $itemRefId, $itemName, $size ?: null, $color ?: null, $quantity, $unitPrice, $subtotal]);
+    }
 
     $pdo->prepare(
         "INSERT INTO order_status_history (order_id, status, notes, changed_by) VALUES (?, 'pending_review', 'Order submitted by customer.', ?)"
@@ -88,6 +149,7 @@ try {
     $pdo->prepare("UPDATE orders SET qr_code_url = ? WHERE order_id = ?")->execute([$qrUrl, $orderId]);
 
     $pdo->commit();
+    if ($cartCheckout) unset($_SESSION['cart']);
 } catch (Exception $e) {
     $pdo->rollBack();
     error_log('Order creation failed: ' . $e->getMessage());

@@ -54,16 +54,11 @@ $statusLabels = [
 $canCancel = !in_array($order['status'], ['completed', 'cancelled'], true)
     && (time() - strtotime($order['created_at'])) <= 7200;
 
-$successMsg = get_flash('success');
-$errorMsg = get_flash('error');
 $pageTitle = $order['order_code'] . ' — Yvolution Custom Apparel';
 include __DIR__ . '/../../includes/header.php';
 ?>
 <div class="container" style="padding:50px 24px;max-width:820px;">
     <a href="<?= BASE_URL ?>/customer/orders/index.php" class="text-link" style="font-size:13px;">&larr; Back to My Orders</a>
-
-    <?php if ($successMsg): ?><div class="alert alert-success" style="margin-top:20px;"><?= e($successMsg) ?></div><?php endif; ?>
-    <?php if ($errorMsg): ?><div class="alert alert-error" style="margin-top:20px;"><?= e($errorMsg) ?></div><?php endif; ?>
 
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:16px;">
         <h1 style="margin:0;"><?= e($order['order_code']) ?></h1>

@@ -29,7 +29,9 @@ function has_role(string ...$roles): bool
 /** Call at the top of any page that requires login. */
 function require_login(): void
 {
-    if (!is_logged_in()) {
+    $user = current_user();
+    if (!$user || (int) ($user['user_id'] ?? 0) < 1) {
+        unset($_SESSION['user']);
         set_flash('error', 'Please log in to continue.');
         redirect('/auth/login.php');
     }

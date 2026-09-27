@@ -48,15 +48,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_verify()) {
     $current = $_POST['current_password'] ?? '';
     $new = $_POST['new_password'] ?? '';
     $confirm = $_POST['confirm_password'] ?? '';
+    $hasPassword = !empty($account['password_hash']);
 
-    if (!password_verify($current, $account['password_hash'])) {
+    if ($hasPassword && !password_verify($current, $account['password_hash'])) {
         $errors[] = 'Current password is incorrect.';
     } elseif (strlen($new) < 8) {
         $errors[] = 'New password must be at least 8 characters.';
     } elseif ($new !== $confirm) {
         $errors[] = 'New passwords do not match.';
     } else {
-        $pdo->prepare("UPDATE users SET password_hash = ? WHERE user_id = ?")
+        $pdo->prepare("UPDATE users SET password_hash = ?, auth_provider = 'local' WHERE user_id = ?")
             ->execute([password_hash($new, PASSWORD_DEFAULT), $user['user_id']]);
         log_audit($pdo, $user['user_id'], 'password_changed');
         set_flash('success', 'Password updated successfully.');
@@ -74,7 +75,6 @@ include __DIR__ . '/../../includes/header.php';
     <h1>My Profile</h1>
 
     <?php foreach ($errors as $err): ?><div class="alert alert-error"><?= e($err) ?></div><?php endforeach; ?>
-    <?php if ($msg = get_flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
 
     <div class="card" style="margin-top:20px;">
         <div class="card-body">
@@ -144,18 +144,22 @@ include __DIR__ . '/../../includes/header.php';
             <form method="POST">
                 <?= csrf_field() ?>
                 <input type="hidden" name="form" value="password">
-                <div class="form-group">
-                    <label for="current_password">Current Password</label>
-                    <input class="form-control" type="password" id="current_password" name="current_password" required>
-                </div>
+                <?php if (!empty($account['password_hash'])): ?>
+                    <div class="form-group">
+                        <label for="current_password">Current Password</label>
+                        <input class="form-control" type="password" id="current_password" name="current_password" autocomplete="current-password" required>
+                    </div>
+                <?php else: ?>
+                    <p style="font-size:13px;color:#777;">This account uses social sign-in. Set a password to also log in with your email.</p>
+                <?php endif; ?>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="new_password">New Password</label>
-                        <input class="form-control" type="password" id="new_password" name="new_password" required minlength="8">
+                        <input class="form-control" type="password" id="new_password" name="new_password" autocomplete="new-password" required minlength="8">
                     </div>
                     <div class="form-group">
                         <label for="confirm_password">Confirm New Password</label>
-                        <input class="form-control" type="password" id="confirm_password" name="confirm_password" required minlength="8">
+                        <input class="form-control" type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required minlength="8">
                     </div>
                 </div>
                 <button type="submit" class="btn btn-dark">Update Password</button>

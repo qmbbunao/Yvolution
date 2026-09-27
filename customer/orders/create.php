@@ -4,6 +4,18 @@ require_role('customer');
 
 $pdo = Database::connect();
 $user = current_user();
+$cartCheckout = ($_GET['cart'] ?? $_POST['cart_checkout'] ?? '') === '1';
+$cartItems = $cartCheckout ? ($_SESSION['cart'] ?? []) : [];
+if ($cartCheckout && !$cartItems) {
+    set_flash('error', 'Your cart is empty. Add a product before checking out.');
+    redirect('/public/cart.php');
+}
+$cartSubtotal = 0.0;
+$cartQuantity = 0;
+foreach ($cartItems as $cartItem) {
+    $cartSubtotal += (float) $cartItem['price'] * (int) $cartItem['quantity'];
+    $cartQuantity += (int) $cartItem['quantity'];
+}
 
 $account = $pdo->prepare("SELECT home_address, home_lat, home_lng FROM users WHERE user_id = ?");
 $account->execute([$user['user_id']]);
@@ -47,6 +59,22 @@ include __DIR__ . '/../../includes/header.php';
             <div class="card-body">
                 <h3 style="font-size:16px;">1. What are you ordering?</h3>
 
+                <?php if ($cartCheckout): ?>
+                    <input type="hidden" name="cart_checkout" value="1">
+                    <input type="hidden" id="order_type" name="order_type" value="product">
+                    <div hidden>
+                        <div id="itemRefGroup"><select id="item_ref_id" name="item_ref_id"></select></div>
+                        <div id="productPreview"><img id="productPreviewImg" src="" alt=""></div>
+                        <div id="customNameGroup"></div>
+                    </div>
+                    <div class="checkout-cart-list">
+                        <?php foreach ($cartItems as $cartItem): ?>
+                            <div><span><?= e($cartItem['name']) ?> × <?= (int) $cartItem['quantity'] ?><?php if (!empty($cartItem['size'])): ?> · <?= e($cartItem['size']) ?><?php endif; ?><?php if (!empty($cartItem['color'])): ?> · <?= e($cartItem['color']) ?><?php endif; ?></span><strong><?= money((float) $cartItem['price'] * (int) $cartItem['quantity']) ?></strong></div>
+                        <?php endforeach; ?>
+                        <div class="checkout-cart-total"><span><?= $cartQuantity ?> total items</span><strong><?= money($cartSubtotal) ?></strong></div>
+                    </div>
+                <?php else: ?>
+
                 <div class="form-group">
                     <label for="order_type">Order Type</label>
                     <select class="form-control" id="order_type" name="order_type" required>
@@ -88,6 +116,8 @@ include __DIR__ . '/../../includes/header.php';
                         <input class="form-control" type="number" id="quantity" name="quantity" value="1" min="1" required>
                     </div>
                 </div>
+
+                <?php endif; ?>
 
                 <div class="form-group">
                     <label for="notes">Order Notes</label>

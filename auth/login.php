@@ -1,10 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/app.php';
 
-if (is_logged_in()) {
-    redirect('/public/index.php');
-}
-
 $errors = [];
 $oldEmail = '';
 
@@ -64,8 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$successMsg = get_flash('success');
-$flashError = get_flash('error');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -77,6 +71,7 @@ $flashError = get_flash('error');
 <link rel="stylesheet" href="<?= asset_url('/assets/css/main.css') ?>">
 </head>
 <body>
+<?php include __DIR__ . '/../includes/flash_toast.php'; ?>
 <div class="auth-shell">
     <div class="auth-side">
         <img src="<?= BASE_URL ?>/assets/images/logo/logo.png" alt="Yvolution logo" style="height:56px;width:auto;max-width:220px;object-fit:contain;align-self:flex-start;margin-bottom:32px;">
@@ -87,14 +82,6 @@ $flashError = get_flash('error');
         <form class="auth-form" method="POST" novalidate>
             <h2>Log In</h2>
             <p class="subtitle">Welcome back.</p>
-
-            <?php if ($successMsg): ?>
-                <div class="alert alert-success"><?= e($successMsg) ?></div>
-            <?php endif; ?>
-
-            <?php if ($flashError): ?>
-                <div class="alert alert-error"><?= e($flashError) ?></div>
-            <?php endif; ?>
 
             <?php foreach ($errors as $err): ?>
                 <div class="alert alert-error"><?= e($err) ?></div>

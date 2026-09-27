@@ -136,6 +136,15 @@ function csrf_verify(): bool
     return !empty($token) && !empty($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
+/** Return the total quantity of items currently held in the session cart. */
+function cart_item_count(): int
+{
+    return array_sum(array_map(
+        static fn (array $item): int => max(0, (int) ($item['quantity'] ?? 0)),
+        $_SESSION['cart'] ?? []
+    ));
+}
+
 /** Generate a unique order code, e.g. YVO-2026-00123 */
 function generate_order_code(PDO $pdo): string
 {

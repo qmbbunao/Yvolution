@@ -48,7 +48,7 @@ include __DIR__ . '/../includes/header.php';
             </p>
             <div style="display:flex;gap:16px;flex-wrap:wrap;">
                 <a href="<?= BASE_URL ?>/auth/register.php" class="btn btn-accent">Start Your Order</a>
-                <a href="#products" class="btn btn-outline">View Catalog</a>
+                <a href="<?= BASE_URL ?>/public/search.php" class="btn btn-outline">View Catalog</a>
             </div>
         </div>
     </div>
@@ -117,6 +117,7 @@ include __DIR__ . '/../includes/header.php';
             </a>
         <?php endforeach; ?>
     </div>
+    <a href="<?= BASE_URL ?>/public/search.php" class="btn btn-outline" style="margin-top:24px;">View All Products</a>
 </section>
 
 <!-- ===================== PACKAGES ===================== -->

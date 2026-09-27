@@ -45,13 +45,16 @@ $pageTitle = $pageTitle ?? 'Yvolution Custom Apparel';
                 </div>
                 <div class="catalog-search-suggestions" id="catalogSearchSuggestions" hidden></div>
             </form>
-            <a href="<?= BASE_URL ?>/public/index.php#products">Products</a>
+            <a href="<?= BASE_URL ?>/public/search.php">Products</a>
+          
             <a href="<?= BASE_URL ?>/public/index.php#services">Services</a>
             <a href="<?= BASE_URL ?>/public/index.php#packages">Packages</a>
             <a href="<?= BASE_URL ?>/public/index.php#promotions">Promotions</a>
             <a href="<?= BASE_URL ?>/public/size_guide.php">Size Guide</a>
             <a href="<?= BASE_URL ?>/public/index.php#contact">Contact</a>
-
+  <a href="<?= BASE_URL ?>/public/cart.php" class="cart-nav-link" aria-label="Cart, <?= cart_item_count() ?> items">
+                Cart <span class="cart-nav-count"<?= cart_item_count() === 0 ? ' hidden' : '' ?>><?= cart_item_count() ?></span>
+            </a>
             <?php if (!$user): ?>
                 <a href="<?= BASE_URL ?>/auth/login.php" class="btn btn-outline btn-sm">Log In</a>
                 <a href="<?= BASE_URL ?>/auth/register.php" class="btn btn-accent btn-sm">Sign Up</a>
@@ -91,6 +94,7 @@ $pageTitle = $pageTitle ?? 'Yvolution Custom Apparel';
     </div>
 </div>
 <?php endif; ?>
+<?php include __DIR__ . '/flash_toast.php'; ?>
 
 <script>
 (function () {

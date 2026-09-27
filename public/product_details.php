@@ -94,7 +94,7 @@ $selectedRating = (int) ($userReview['rating'] ?? 5);
 ?>
 
 <div class="container" style="padding:50px 24px;">
-    <a href="<?= BASE_URL ?>/public/index.php#products" class="text-link" style="font-size:13px;">&larr; Back to Catalog</a>
+    <a href="<?= BASE_URL ?>/public/search.php" class="text-link" style="font-size:13px;">&larr; Back to Catalog</a>
 
     <div class="product-detail-layout reveal">
         <div class="product-gallery-layout">
@@ -121,27 +121,45 @@ $selectedRating = (int) ($userReview['rating'] ?? 5);
             <p style="font-size:26px;color:var(--c-accent);font-family:var(--f-display); margin-bottom:18px;"><?= money($product['base_price']) ?></p>
             <p class="text-secondary" style="line-height:1.7;"><?= nl2br(e($product['description'])) ?></p>
 
-            <?php if (!empty($sizes)): ?>
-                <div style="margin-top:20px;">
-                    <label style="font-size:12px;text-transform:uppercase;font-weight:700;color:#333;">Available Sizes</label>
-                    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-                        <?php foreach ($sizes as $size): ?>
-                            <span class="badge badge-pending"><?= e($size) ?></span>
-                        <?php endforeach; ?>
-                    </div>
+            <form method="POST" action="<?= BASE_URL ?>/public/cart_action.php" class="product-cart-form" style="margin-top:20px;">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="add">
+                <input type="hidden" name="product_id" value="<?= (int) $product['product_id'] ?>">
+                <input type="hidden" name="return_to" value="/public/product_details.php?id=<?= (int) $product['product_id'] ?>">
+                <div class="product-option-fields">
+                    <?php if (!empty($sizes)): ?>
+                        <label>Size
+                            <select class="form-control" name="size" required>
+                                <option value="">Select size</option>
+                                <?php foreach ($sizes as $size): ?><option value="<?= e($size) ?>"><?= e($size) ?></option><?php endforeach; ?>
+                            </select>
+                        </label>
+                    <?php endif; ?>
+                    <?php if (!empty($colors)): ?>
+                        <label>Color
+                            <select class="form-control" name="color" required>
+                                <option value="">Select color</option>
+                                <?php foreach ($colors as $color): ?><option value="<?= e($color) ?>"><?= e($color) ?></option><?php endforeach; ?>
+                            </select>
+                        </label>
+                    <?php endif; ?>
+                    <label>Quantity
+                        <input class="form-control" type="number" name="quantity" value="1" min="1" max="<?= max(1, (int) $product['stock_qty']) ?>" required>
+                    </label>
                 </div>
-            <?php endif; ?>
-
-            <?php if (!empty($colors)): ?>
-                <div style="margin-top:16px;">
-                    <label style="font-size:12px;text-transform:uppercase;font-weight:700;color:#333;">Available Colors</label>
-                    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-                        <?php foreach ($colors as $color): ?>
-                            <span class="badge badge-progress"><?= e($color) ?></span>
-                        <?php endforeach; ?>
-                    </div>
+                <div class="product-detail-actions">
+                    <?php if ((int) $product['stock_qty'] > 0): ?>
+                        <button type="submit" class="btn btn-outline">Add to Cart</button>
+                    <?php else: ?>
+                        <button type="button" class="btn btn-outline" disabled>Out of Stock</button>
+                    <?php endif; ?>
+                    <?php if (is_logged_in() && has_role('customer')): ?>
+                        <a href="<?= BASE_URL ?>/customer/orders/create.php?product_id=<?= (int) $product['product_id'] ?>" class="btn btn-accent">Order This Product</a>
+                    <?php else: ?>
+                        <a href="<?= BASE_URL ?>/auth/login.php" class="btn btn-accent">Log In to Order</a>
+                    <?php endif; ?>
                 </div>
-            <?php endif; ?>
+            </form>
 
             <p style="margin-top:16px;font-size:13px;color:<?= $product['stock_qty'] > 0 ? '#1a7a44' : '#b3261e' ?>;">
                 <?= $product['stock_qty'] > 0 ? 'In stock — ' . (int) $product['stock_qty'] . ' available' : 'Currently out of stock' ?>
@@ -159,11 +177,6 @@ $selectedRating = (int) ($userReview['rating'] ?? 5);
                 </div>
             <?php endif; ?>
 
-            <?php if (is_logged_in() && has_role('customer')): ?>
-                <a href="<?= BASE_URL ?>/customer/orders/create.php?product_id=<?= (int) $product['product_id'] ?>" class="btn btn-accent" style="margin-top:24px;">Order This Product</a>
-            <?php else: ?>
-                <a href="<?= BASE_URL ?>/auth/login.php" class="btn btn-accent" style="margin-top:24px;">Log In to Order</a>
-            <?php endif; ?>
         </div>
     </div>
 

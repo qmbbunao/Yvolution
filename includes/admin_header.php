@@ -74,5 +74,4 @@ $navItems = [
         </div>
     </aside>
     <main class="admin-main">
-        <?php if ($msg = get_flash('success')): ?><div class="alert alert-success"><?= e($msg) ?></div><?php endif; ?>
-        <?php if ($msg = get_flash('error')): ?><div class="alert alert-error"><?= e($msg) ?></div><?php endif; ?>
+        <?php include __DIR__ . '/flash_toast.php'; ?>
